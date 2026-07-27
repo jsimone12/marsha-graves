@@ -465,8 +465,8 @@ footer .copy{opacity:.38;font-size:.76rem;margin-top:1.8rem;}
     if(lastFocus) lastFocus.focus();
   }
 
-  /* any button pointing at checkout opens the gate instead */
-  document.querySelectorAll('a[href="' + CHECKOUT + '"]').forEach(function(a){
+  /* any button pointing at checkout or the offer anchor opens the gate */
+  document.querySelectorAll('a[href="' + CHECKOUT + '"], a[href="#get"]').forEach(function(a){
     a.addEventListener('click', openGate);
   });
 
