@@ -434,10 +434,21 @@ footer .copy{opacity:.38;font-size:.76rem;margin-top:1.8rem;}
   </div>
 </div>
 
+<!-- hidden delivery form: not subject to CORS, always sends -->
+<iframe name="gate-sink" id="gate-sink" style="display:none" title="hidden"></iframe>
+<form id="gate-form" method="POST" target="gate-sink" style="display:none"
+      action="https://services.leadconnectorhq.com/hooks/MR8h8bFUEIbExKDE0kyQ/webhook-trigger/86c62428-5f39-449d-b1a7-08ce445761d3">
+  <input type="hidden" name="first_name" id="p-fname">
+  <input type="hidden" name="last_name"  id="p-lname">
+  <input type="hidden" name="email"      id="p-email">
+  <input type="hidden" name="phone"      id="p-phone">
+  <input type="hidden" name="source"     value="My Cancer Journey landing page">
+  <input type="hidden" name="product"    value="My Cancer Journey 150-Day Journal">
+</form>
+
 <script>
 (function(){
   /* ---- CONFIG ---- */
-  var WEBHOOK  = "https://services.leadconnectorhq.com/hooks/MR8h8bFUEIbExKDE0kyQ/webhook-trigger/86c62428-5f39-449d-b1a7-08ce445761d3";
   var CHECKOUT = "https://shop.clockbeatz.com/checkout-page";
 
   var gate    = document.getElementById('gate');
@@ -499,34 +510,29 @@ footer .copy{opacity:.38;font-size:.76rem;margin-top:1.8rem;}
     submit.textContent = 'One moment...';
     submit.disabled = true;
 
-    var data = {
+    var v = {
       first_name: fields.first_name.value.trim(),
       last_name:  fields.last_name.value.trim(),
       email:      fields.email.value.trim(),
-      phone:      fields.phone.value.trim(),
-      source:     'My Cancer Journey landing page',
-      product:    'My Cancer Journey 150-Day Journal'
+      phone:      fields.phone.value.trim()
     };
 
-    var qs = '?first_name=' + encodeURIComponent(data.first_name) +
-             '&last_name='  + encodeURIComponent(data.last_name) +
-             '&email='      + encodeURIComponent(data.email) +
-             '&phone='      + encodeURIComponent(data.phone);
+    /* fill and fire the hidden form */
+    document.getElementById('p-fname').value = v.first_name;
+    document.getElementById('p-lname').value = v.last_name;
+    document.getElementById('p-email').value = v.email;
+    document.getElementById('p-phone').value = v.phone;
+    document.getElementById('gate-form').submit();
 
-    function forward(){ window.location.href = CHECKOUT + qs; }
+    var qs = '?first_name=' + encodeURIComponent(v.first_name) +
+             '&last_name='  + encodeURIComponent(v.last_name) +
+             '&email='      + encodeURIComponent(v.email) +
+             '&phone='      + encodeURIComponent(v.phone);
 
-    /* never let a webhook failure block the sale */
-    var done = false;
-    var timer = setTimeout(function(){ if(!done){ done = true; forward(); } }, 2500);
-
-    fetch(WEBHOOK, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(data)
-    }).catch(function(){}).finally(function(){
-      if(!done){ done = true; clearTimeout(timer); forward(); }
-    });
+    /* give the POST a beat to leave, then move to checkout regardless */
+    setTimeout(function(){
+      window.location.href = CHECKOUT + qs;
+    }, 900);
   }
 
   submit.addEventListener('click', go);
